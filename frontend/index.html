@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hostel Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+    .rooms {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .room {
+      background: #fff;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .room h3 {
+      margin: 0 0 8px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      background: #eef2ff;
+      font-size: 12px;
+    }
+    .full {
+      background: #ffe5e5;
+      color: #b00020;
+    }
+    form {
+      background: #fff;
+      padding: 16px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    form h2 {
+      grid-column: 1 / -1;
+      margin: 0 0 8px;
+    }
+    input, select, button {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    button {
+      grid-column: 1 / -1;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    .msg {
+      margin-top: 12px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .tenants {
+      margin-top: 24px;
+      background: #fff;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🏨 Hostel Management</h1>
+
+    <div class="rooms" id="rooms"></div>
+
+    <form id="tenantForm">
+      <h2>Add Tenant</h2>
+      <input type="text" id="name" placeholder="Tenant Name" required />
+      <select id="room">
+        <option value="R1">R1</option>
+        <option value="R2">R2</option>
+        <option value="R3">R3</option>
+        <option value="R4">R4</option>
+      </select>
+      <input type="date" id="startDate" required />
+      <input type="date" id="endDate" required />
+      <button type="submit">Add Tenant</button>
+    </form>
+
+    <div class="msg" id="msg"></div>
+
+    <div class="tenants">
+      <h2>Tenants</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Room</th>
+            <th>From</th>
+            <th>To</th>
+          </tr>
+        </thead>
+        <tbody id="tenantTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const API = "http://localhost:8080/api";
+
+    async function loadRooms() {
+      const res = await fetch(`${API}/rooms`);
+      const rooms = await res.json();
+
+      const roomsDiv = document.getElementById("rooms");
+      roomsDiv.innerHTML = "";
+
+      rooms.forEach(r => {
+        const isFull = r.occupiedBeds >= r.totalBeds;
+        roomsDiv.innerHTML += `
+          <div class="room">
+            <h3>Room ${r.roomNumber}</h3>
+            <span class="badge ${isFull ? "full" : ""}">
+              Beds: ${r.occupiedBeds}/${r.totalBeds}
+            </span>
+          </div>
+        `;
+      });
+    }
+
+    async function loadTenants() {
+      const res = await fetch(`${API}/tenants`);
+      const tenants = await res.json();
+
+      const table = document.getElementById("tenantTable");
+      table.innerHTML = "";
+
+      tenants.forEach(t => {
+        table.innerHTML += `
+          <tr>
+            <td>${t.name}</td>
+            <td>${t.room?.roomNumber || "-"}</td>
+            <td>${t.startDate}</td>
+            <td>${t.endDate}</td>
+          </tr>
+        `;
+      });
+    }
+
+    document.getElementById("tenantForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const room = document.getElementById("room").value;
+      const startDate = document.getElementById("startDate").value;
+      const endDate = document.getElementById("endDate").value;
+
+      const res = await fetch(`${API}/tenant/${room}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, startDate, endDate })
+      });
+
+      const msg = document.getElementById("msg");
+
+      if (res.ok) {
+        msg.style.color = "green";
+        msg.textContent = "✅ Tenant added successfully!";
+        document.getElementById("tenantForm").reset();
+        loadRooms();
+        loadTenants();
+      } else {
+        const err = await res.json();
+        msg.style.color = "red";
+        msg.textContent = err.message || "❌ Error adding tenant";
+      }
+    });
+
+    // Initial load
+    loadRooms();
+    loadTenants();
+  </script>
+</body>
+</html>
