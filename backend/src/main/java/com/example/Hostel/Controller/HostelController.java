@@ -17,7 +17,7 @@ import com.example.Hostel.Service.TenantService;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin("*")
+// @CrossOrigin("*")
 public class HostelController {
 
     @Autowired
