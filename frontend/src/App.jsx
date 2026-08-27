@@ -103,7 +103,11 @@ function App() {
                                 to="/dashboard"
                                 replace
                             />
-                            : <Register />
+                            : <Register 
+                            onLoginClick={() => {
+                                        window.location.href =
+                                            "/login";
+                                    }} />
                     }
                 />
 

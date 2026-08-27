@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Hostel.Entities.User;
 import com.example.Hostel.Service.AuthService;
+import com.example.Hostel.Service.JwtService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -32,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 
@@ -73,7 +75,7 @@ public class AuthController {
                     null);
 
             return ResponseEntity.ok(
-                    user.getName() + " logged in successfully.");
+                    user.getName() + " logged in successfully. "+ jwtService.generateToken(authentication));
 
         } catch (Exception ex) {
 

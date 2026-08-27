@@ -5,24 +5,25 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
-@AllArgsConstructor
-public class Room {
-
+public class Roles {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    Long id;
 
-    private String roomNumber;   // e.g. R1, R2, R3, R4
+    @NotBlank
+    @Column(nullable = false, unique = true)
+    String name;
 
-    
-    private int totalBeds = 4;
-    private int occupiedBeds = 0;
+    public Roles(@NotBlank String name) {
+        this.name = name;
+    }
 }
-
